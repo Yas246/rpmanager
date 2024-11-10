@@ -118,14 +118,13 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      window.addEventListener("load", async () => {
+      const registerServiceWorker = async () => {
         try {
           const registration = await navigator.serviceWorker.register(
             "/service-worker.js"
           );
           console.log("ServiceWorker registration successful:", registration);
 
-          // Check for updates
           registration.addEventListener("updatefound", () => {
             const newWorker = registration.installing;
             if (newWorker) {
@@ -134,11 +133,10 @@ export default function Home() {
                   newWorker.state === "installed" &&
                   navigator.serviceWorker.controller
                 ) {
-                  if (
-                    window.confirm(
-                      "New version available! Would you like to update?"
-                    )
-                  ) {
+                  const updateApp = window.confirm(
+                    "New version available! Would you like to update?"
+                  );
+                  if (updateApp) {
                     newWorker.postMessage({ type: "SKIP_WAITING" });
                     window.location.reload();
                   }
@@ -149,12 +147,18 @@ export default function Home() {
         } catch (err) {
           console.error("ServiceWorker registration failed:", err);
         }
-      });
+      };
 
-      // Handle controller change
-      navigator.serviceWorker.addEventListener("controllerchange", () => {
-        console.log("New service worker activated");
-      });
+      // Attendre que la page soit complètement chargée
+      if (document.readyState === "complete") {
+        registerServiceWorker();
+      } else {
+        window.addEventListener("load", registerServiceWorker);
+      }
+
+      return () => {
+        window.removeEventListener("load", registerServiceWorker);
+      };
     }
   }, []);
 

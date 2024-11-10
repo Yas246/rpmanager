@@ -1,6 +1,6 @@
 {
-  "name": "Work Report Generator",
-  "short_name": "Work Report",
+  "name": "IST-Rapport",
+  "short_name": "IST-RP",
   "description": "Application de génération de rapports de travail journaliers",
   "start_url": "/",
   "display": "standalone",
@@ -10,7 +10,8 @@
     {
       "src": "/logo.svg",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ]
 }
