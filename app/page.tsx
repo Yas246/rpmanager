@@ -120,23 +120,12 @@ export default function Home() {
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", async () => {
         try {
-          // Get the current hostname
-          const hostname = window.location.hostname;
-          // Determine the correct protocol (http or https)
-          const protocol = window.location.protocol;
-          // Construct the full URL for the service worker
-          const swUrl = `${protocol}//${hostname}${
-            window.location.port ? `:${window.location.port}` : ""
-          }/service-worker.js`;
+          const registration = await navigator.serviceWorker.register(
+            "/service-worker.js"
+          );
+          console.log("ServiceWorker registration successful:", registration);
 
-          const registration = await navigator.serviceWorker.register(swUrl, {
-            scope: "/",
-          });
-
-          // Check for updates immediately
-          registration.update();
-
-          // Handle updates
+          // Check for updates
           registration.addEventListener("updatefound", () => {
             const newWorker = registration.installing;
             if (newWorker) {
@@ -145,7 +134,6 @@ export default function Home() {
                   newWorker.state === "installed" &&
                   navigator.serviceWorker.controller
                 ) {
-                  // New service worker is installed and ready to take over
                   if (
                     window.confirm(
                       "New version available! Would you like to update?"
@@ -158,11 +146,6 @@ export default function Home() {
               });
             }
           });
-
-          console.log(
-            "ServiceWorker registration successful with scope:",
-            registration.scope
-          );
         } catch (err) {
           console.error("ServiceWorker registration failed:", err);
         }
