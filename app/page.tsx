@@ -116,6 +116,9 @@ export default function Home() {
     return false;
   });
 
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
   useEffect(() => {
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       const registerServiceWorker = async () => {
@@ -190,6 +193,28 @@ export default function Home() {
     const handleChange = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("beforeinstallprompt", (e) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    });
+
+    window.addEventListener("appinstalled", () => {
+      // Clear the deferredPrompt so it can be garbage collected
+      setDeferredPrompt(null);
+      setIsInstallable(false);
+      console.log("PWA was installed");
+    });
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", () => {});
+      window.removeEventListener("appinstalled", () => {});
+    };
   }, []);
 
   const addTask = () => {
@@ -392,6 +417,21 @@ export default function Home() {
     doc.save(`report-${report.date.format("YYYY-MM-DD")}.pdf`);
   };
 
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+
+    // Show the install prompt
+    deferredPrompt.prompt();
+
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+
+    // We've used the prompt, and can't use it again, discard it
+    setDeferredPrompt(null);
+    setIsInstallable(false);
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <div
@@ -410,6 +450,14 @@ export default function Home() {
             >
               {isDarkMode ? "☀️" : "🌙"}
             </button>
+            {isInstallable && (
+              <button
+                onClick={handleInstallClick}
+                className="ml-4 p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
+              >
+                Installer l&apos;application
+              </button>
+            )}
           </div>
 
           {error && (
