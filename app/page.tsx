@@ -116,7 +116,7 @@ export default function Home() {
     return false;
   });
 
-  const [deferredPrompt, setDeferredPrompt] = useState<boolean>(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
 
   useEffect(() => {
